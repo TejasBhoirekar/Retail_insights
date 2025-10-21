@@ -25,6 +25,7 @@ pip install -r requirements.txt
 ```
 ### Run the Streamlit App
 ```bash
+cd notebooks
 streamlit run app.py
 ```
 ### Upload Your Dataset
