@@ -1,4 +1,4 @@
-# Retail_insights
+# Retail Business Insights
 
 ### Overview
 **Retail Insights** is a data-driven project that analyzes transactional data to identify customer segments using **RFM Analysis** and **KMeans Clustering**.  
