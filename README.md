@@ -30,67 +30,74 @@ streamlit run app.py
 ### Upload Your Dataset
 Upload the file retail_dataset.csv when prompted in the dashboard interface.
 
--------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------
 
 ## Assumptions Made
+- Each transaction in the dataset represents one invoice line item.  
+- Cancelled invoices are identified by InvoiceNo starting with 'C' and are excluded.  
+- CustomerID uniquely identifies a customer.  
+- Revenue is computed as Quantity × UnitPrice.  
+- The project assumes the dataset covers at least a few months of data to enable meaningful segmentation.  
 
-•	Each transaction in the dataset represents one invoice line item.
-•	Cancelled invoices are identified by InvoiceNo starting with ‘C’ and are excluded.
-•	CustomerID uniquely identifies a customer.
-•	Revenue is computed as Quantity × UnitPrice.
-•	The project assumes the dataset covers at least a few months of data to enable meaningful segmentation.
-
--------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------
 
 ## Technologies Used
+- Programming Language: Python  
+- Data Processing: Pandas, NumPy  
+- Data Visualization: Matplotlib  
+- Machine Learning: Scikit-learn (KMeans)  
+- Dashboard: Streamlit  
+- Development Environment: Jupyter Notebook, VS Code  
+- Version Control: Git, GitHub  
 
-•	Programming Language: Python
-•	Data Processing: Pandas, NumPy
-• Data Visualisation: Matplotlib
-• Machine Learning: Scikit-learn (KMeans)
-• Dashboard: Streamlit
-• Development Environment: Jupyter Notebook, VS Code
-• Version Control: Git, GitHub
-
--------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------
 
 ## Approach Summary
 
-Data Cleaning
-	•	Removed duplicates, missing CustomerIDs, and cancelled transactions.
-	•	Ensured positive quantities and valid unit prices.
-	•	Converted InvoiceDate to datetime (YYYY-MM-DD HH:MM:SS) format.
-	•	Created a new Revenue column = Quantity × UnitPrice.
+### Data Cleaning
+- Removed duplicates, missing CustomerIDs, and cancelled transactions.  
+- Ensured positive quantities and valid unit prices.  
+- Converted InvoiceDate to datetime (YYYY-MM-DD HH:MM:SS) format.  
+- Created a new Revenue column = Quantity × UnitPrice.  
 
-Exploratory Data Analysis (EDA)
-	•	Identified top-selling products, countries with highest sales, and monthly sales trends.
-	•	Calculated key business metrics:
-	•	Average Order Value (AOV)
-	•	Purchase Frequency
-	•	Revenue per Customer
+------------------------------------------------------------------------------------------------------------------------------------------------
 
-RFM Analysis
-	•	Computed Recency, Frequency, and Monetary values for each customer.
-	•	Applied quantile-based scoring (1–5) for each metric.
-	•	Combined scores into RFM_Sum and categorized customers into:
-	  •	Loyal
-	  •	Potential
-	  •	At Risk
-	  • Need Attention
+### Exploratory Data Analysis (EDA)
+- Identified top-selling products, countries with highest sales, and monthly sales trends.  
+- Calculated key business metrics:  
+  - Average Order Value (AOV)  
+  - Purchase Frequency  
+  - Revenue per Customer  
 
-KMeans Clustering
-	•	Standardized RFM data using StandardScaler.
-	•	Used the Elbow Method to determine the optimal number of clusters.
-	•	Performed clustering and visualized results (Recency vs Monetary, Frequency vs Monetary).
+------------------------------------------------------------------------------------------------------------------------------------------------
 
-Business Insights
-	•	Loyal customers bring the most consistent revenue.
-	•	Potential customers show high growth opportunities.
-	•	At-risk customers can be reactivated with targeted campaigns.
-	•	Recommended marketing strategies for retention and upselling.
+### RFM Analysis
+- Computed Recency, Frequency, and Monetary values for each customer.  
+- Applied quantile-based scoring (1–5) for each metric.  
+- Combined scores into RFM_Sum and categorized customers into:  
+  - Loyal  
+  - Potential  
+  - At Risk  
+  - Need Attention  
 
-  -----------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------
 
+### KMeans Clustering
+- Standardized RFM data using StandardScaler.  
+- Used the Elbow Method to determine the optimal number of clusters.  
+- Performed clustering and visualized results:  
+  - Recency vs Monetary  
+  - Frequency vs Monetary  
+
+------------------------------------------------------------------------------------------------------------------------------------------------
+
+### Business Insights
+- Loyal customers bring the most consistent revenue.  
+- Potential customers show high growth opportunities.  
+- At-risk customers can be reactivated with targeted campaigns.  
+- Recommended marketing strategies for retention and upselling.
+
+-----------------------------------------------------------------------------------------------------------------------------------------------  
   ## Screenshots
 
   <img width="2929" height="994" alt="image" src="https://github.com/user-attachments/assets/4ad0fd70-3022-4cea-89d4-aec211bdaa9b" />
