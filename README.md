@@ -98,7 +98,35 @@ Upload the file retail_dataset.csv when prompted in the dashboard interface.
 - At-risk customers can be reactivated with targeted campaigns.  
 - Recommended marketing strategies for retention and upselling.
 
------------------------------------------------------------------------------------------------------------------------------------------------  
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
+## Email Automation (Customer Campaigns)
+
+- This feature enables automated, personalized email campaigns based on RFM segmentation results.
+- It allows marketing teams to target customer groups directly from the Streamlit Dashboard.
+
+------------------------------------------------------------------------------------------------------------------------------------------------
+
+## Setup Instructions
+
+Create a Gmail App Password
+- Go to https://myaccount.google.com/security
+- Enable 2-Step Verification (mandatory).
+- Visit https://myaccount.google.com/apppasswords.
+- Select Mail → Other (Custom name) → type Retail_Insights_App.
+- Copy the 16-character password Google provides.
+
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
+## Create a .env File
+
+In your project root directory, create a file named .env and add:
+```bash
+SENDER_EMAIL=youremail@gmail.com
+APP_PASSWORD=your_app_password_here
+```
+------------------------------------------------------------------------------------------------------------------------------------------------
+
   ## Screenshots
 
   <img width="2929" height="994" alt="image" src="https://github.com/user-attachments/assets/4ad0fd70-3022-4cea-89d4-aec211bdaa9b" />
