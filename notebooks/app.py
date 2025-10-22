@@ -1,6 +1,7 @@
-# Retail Customer Segmentation Dashboard
+# ============================================================
+# Retail Customer Segmentation Dashboard (Final Version)
+# ============================================================
 
-# IMPORTS
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -9,50 +10,69 @@ from datetime import timedelta
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 
-
+# ------------------------------------------------------------
 # PAGE CONFIGURATION
+# ------------------------------------------------------------
 st.set_page_config(
     page_title="Retail Customer Segmentation",
-    layout="wide",
-    page_icon="🛍️"
+    layout="wide"
 )
 
-st.title("🛍️ Retail Customer Segmentation Dashboard")
+st.title("Retail Customer Segmentation Dashboard")
 st.markdown("""
 Analyze customer purchasing behavior in real time using **RFM Analysis** and **KMeans Clustering**.  
 Upload your retail dataset (`retail_dataset.csv`) to view live segmentation results.
 """)
 
-
+# ------------------------------------------------------------
 # FILE UPLOAD
-uploaded_file = st.file_uploader("📂 Upload your retail dataset CSV file", type=["csv"])
+# ------------------------------------------------------------
+uploaded_file = st.file_uploader("Upload your retail dataset CSV file", type=["csv"])
 
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file, encoding="ISO-8859-1")
     st.success("Dataset uploaded successfully!")
 
-    # DATA CLEANING
-    st.header("🧹 Data Cleaning")
+    # ------------------------------------------------------------
+    # DATA CLEANING (FIXED)
+    # ------------------------------------------------------------
+    st.header("Data Cleaning")
 
     df = df.drop_duplicates()
     df = df.dropna(subset=["CustomerID"])
     df = df[~df["InvoiceNo"].astype(str).str.startswith("C", na=False)]
+
+    # Ensure numeric values
     df["Quantity"] = pd.to_numeric(df["Quantity"], errors="coerce")
     df["UnitPrice"] = pd.to_numeric(df["UnitPrice"], errors="coerce")
     df = df[(df["Quantity"] > 0) & (df["UnitPrice"] > 0)]
-    df["InvoiceDate"] = pd.to_datetime(df["InvoiceDate"], errors="coerce")
+
+    # ✅ FIXED: Properly parse InvoiceDate
+    df["InvoiceDate"] = df["InvoiceDate"].replace("", np.nan)
+    df["InvoiceDate"] = pd.to_datetime(df["InvoiceDate"], errors="coerce", infer_datetime_format=True)
+    df = df.dropna(subset=["InvoiceDate"])
+
+    # Compute revenue
     df["Revenue"] = df["Quantity"] * df["UnitPrice"]
 
-    # Display quick metrics
+    # ------------------------------------------------------------
+    # DATA OVERVIEW
+    # ------------------------------------------------------------
+    total_orders = df["InvoiceNo"].nunique()
+    unique_customers = df["CustomerID"].nunique()
+    total_revenue = df["Revenue"].sum()
+
     col1, col2, col3 = st.columns(3)
-    col1.metric("🧾 Total Orders", df["InvoiceNo"].nunique())
-    col2.metric("👥 Unique Customers", df["CustomerID"].nunique())
-    col3.metric("💰 Total Revenue", f"${df['Revenue'].sum():,.2f}")
+    col1.metric("Total Orders", total_orders)
+    col2.metric("Unique Customers", unique_customers)
+    col3.metric("Total Revenue", f"${total_revenue:,.2f}")
 
     st.dataframe(df.head(10))
 
+    # ------------------------------------------------------------
     # RFM ANALYSIS
-    st.header("💰 Customer Segmentation using RFM")
+    # ------------------------------------------------------------
+    st.header("Customer Segmentation using RFM")
 
     snapshot_date = df["InvoiceDate"].max() + timedelta(days=1)
 
@@ -65,17 +85,18 @@ if uploaded_file is not None:
     rfm.columns = ["CustomerID", "Recency", "Frequency", "Monetary"]
     rfm = rfm[rfm["Monetary"] > 0].dropna(subset=["Recency", "Frequency", "Monetary"])
 
-    # RFM SCORING
+    # ------------------------------------------------------------
+    # SAFER RFM SCORING
+    # ------------------------------------------------------------
     try:
         rfm["R_score"] = pd.qcut(rfm["Recency"].rank(method="first"), 5, labels=[5,4,3,2,1])
         rfm["F_score"] = pd.qcut(rfm["Frequency"].rank(method="first"), 5, labels=[1,2,3,4,5])
         rfm["M_score"] = pd.qcut(rfm["Monetary"].rank(method="first"), 5, labels=[1,2,3,4,5])
 
-        # Safe conversion (handles NaN gracefully)
         for col in ["R_score", "F_score", "M_score"]:
             rfm[col] = rfm[col].astype(float).fillna(0).astype(int)
     except ValueError:
-        st.warning("⚠️ Not enough unique data points to create 5 quantile bins — using fewer bins.")
+        st.warning("Not enough unique values to create 5 quantile bins — using fewer bins.")
         n_bins = min(3, len(rfm))
         rfm["R_score"] = pd.qcut(rfm["Recency"].rank(method="first"), n_bins, labels=range(n_bins, 0, -1))
         rfm["F_score"] = pd.qcut(rfm["Frequency"].rank(method="first"), n_bins, labels=range(1, n_bins + 1))
@@ -83,9 +104,9 @@ if uploaded_file is not None:
         for col in ["R_score", "F_score", "M_score"]:
             rfm[col] = rfm[col].astype(float).fillna(0).astype(int)
 
-    # Combine RFM metrics
     rfm["RFM_Sum"] = rfm[["R_score", "F_score", "M_score"]].sum(axis=1)
 
+    # Customer segmentation logic
     def label_customer(row):
         if row["RFM_Sum"] >= 13:
             return "Loyal"
@@ -98,16 +119,17 @@ if uploaded_file is not None:
 
     rfm["Segment"] = rfm.apply(label_customer, axis=1)
 
-    st.subheader("📊 RFM Segmentation Summary")
+    st.subheader("RFM Segmentation Summary")
     st.dataframe(rfm[["CustomerID", "Recency", "Frequency", "Monetary", "RFM_Sum", "Segment"]].head(10))
 
     seg_summary = rfm["Segment"].value_counts().reset_index()
     seg_summary.columns = ["Segment", "Count"]
     st.bar_chart(seg_summary.set_index("Segment"))
 
-    
+    # ------------------------------------------------------------
     # KMEANS CLUSTERING
-    st.header("🤖 KMeans Clustering (Live)")
+    # ------------------------------------------------------------
+    st.header("KMeans Clustering (Live)")
 
     k_value = st.slider("Select number of clusters (K)", 2, 10, 4)
 
@@ -119,7 +141,6 @@ if uploaded_file is not None:
 
     st.write(f"KMeans clustering complete with **K = {k_value}**")
 
-    # Cluster visualization
     fig1, ax1 = plt.subplots(figsize=(8, 5))
     scatter = ax1.scatter(rfm["Recency"], rfm["Monetary"], c=rfm["Cluster"])
     ax1.set_xlabel("Recency (days)")
@@ -134,19 +155,40 @@ if uploaded_file is not None:
     ax2.set_title(f"KMeans Clusters (K={k_value}) - Frequency vs Monetary")
     st.pyplot(fig2)
 
-    
+    # Email Campaign Section
+
+    import email_automation
+
+    st.header("✉️ Email Automation - Customer Campaign")
+
+    st.markdown("""
+    Use this section to automatically send personalized emails to customers based on their RFM segment.
+    Emails are sent using credentials securely stored in your `.env` file.
+    """)
+
+    # Option to run RFM segmentation again or use existing rfm
+    if st.button("Generate and Send Emails Now"):
+        with st.spinner("Performing RFM segmentation and sending emails..."):
+         # Load your dataset again (or use uploaded one)
+            df = pd.read_csv("../data/retail_dataset.csv", encoding="ISO-8859-1")
+            rfm = email_automation.perform_rfm_segmentation(df)
+            email_automation.send_segment_emails(rfm)
+        st.success("Email campaign completed successfully!")
+
+    # ------------------------------------------------------------
     # BUSINESS INSIGHTS
-    st.header("💡 Business Insights & Recommendations")
+    # ------------------------------------------------------------
+    st.header("Business Insights & Recommendations")
 
     st.markdown("""
     **Key Insights:**
-    - 🏆 **Loyal Customers**: Spend the most and purchase often — reward them with loyalty programs and early access sales.  
-    - ⚠️ **At Risk Customers**: Used to buy frequently but have become inactive — send reactivation or “We miss you” campaigns.  
-    - 🚀 **Potential Customers**: Regular, growing buyers — ideal for upselling and cross-selling.  
-    - 🌱 **Need Attention**: New or low-engagement buyers — nurture them with welcome offers and next-purchase discounts.
+    - **Loyal Customers:** Generate the most consistent revenue — reward them with loyalty programs.
+    - **Potential Customers:** Have high growth potential — target them with upselling campaigns.
+    - **At Risk Customers:** Need reactivation — send “We miss you” discounts.
+    - **Need Attention:** New or low-engagement buyers — nurture with welcome offers.
 
-    **Next Campaign Target:** 🎯 *Potential Customers* — easiest to convert into Loyal customers with personalized marketing.
+    **Next Campaign Target:** *Potential Customers* — easiest to convert into loyal ones with personalized promotions.
     """)
 
 else:
-    st.info("👈 Please upload your `retail_dataset.csv` file to start live segmentation.")
+    st.info("Please upload your `retail_dataset.csv` file to start live segmentation.")

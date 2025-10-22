@@ -8,6 +8,9 @@ env/
 venv/
 .venv/
 
+# Environment and secrets
+.env
+
 # Ignore Jupyter notebook checkpoints
 .ipynb_checkpoints/
 
